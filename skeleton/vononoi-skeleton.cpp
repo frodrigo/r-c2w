@@ -3,17 +3,15 @@
 using namespace std;
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include <CGAL/Polygon_with_holes_2.h>
+#include <CGAL/Polygon_2.h>
 #include <CGAL/create_straight_skeleton_from_polygon_with_holes_2.h>
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K ;
 
 typedef K::Point_2                    Point ;
 typedef CGAL::Polygon_2<K>            Polygon ;
-typedef CGAL::Polygon_with_holes_2<K> Polygon_with_holes ;
 
 
-typedef Polygon_with_holes::Hole_const_iterator Hole_const_iterator;
 typedef Polygon::Edge_const_iterator Edge_const_iterator;
 
 
@@ -42,8 +40,59 @@ typedef CGAL::Parabola_segment_2<Gt> Parabola;
 
 #include <CGAL/Polygon_2_algorithms.h>
 
-int main(int argn, char **argv)
-{
+void insert_polygon(SDG2 &sdg, Polygon &p) {
+//  cerr << "insert inner..." << p << endl << flush;
+  for(Edge_const_iterator i=p.edges_begin(); i!=p.edges_end(); ++i ) {
+//    cerr << "insert edge..." << *i << endl << flush;
+    SDG2::Site_2 site;
+    site = SDG2::Site_2::construct_site_2(i->source(),i->target());
+    sdg.insert( site );
+  }
+}
+
+bool is_in(vector<Polygon> &outer, vector<Polygon> &inner, Segment &s) {
+  // Le segement en entier est d'un seul cote.
+  bool in_outer = false;
+  for(vector<Polygon>::iterator h=outer.begin(); h!=outer.end(); ++h) {
+    if( h->bounded_side(s.source()) == CGAL::ON_BOUNDED_SIDE && h->bounded_side(s.target()) == CGAL::ON_BOUNDED_SIDE ) {
+      in_outer = true;
+      break;
+    }
+  }
+  if( in_outer ) {
+    for(vector<Polygon>::iterator h=inner.begin(); h!=inner.end(); ++h) {
+      if( h->bounded_side(s.source()) != CGAL::ON_UNBOUNDED_SIDE || h->bounded_side(s.target()) != CGAL::ON_UNBOUNDED_SIDE ) {
+        return false;
+      }
+    }
+    return true;
+  } else {
+    return false;
+  }
+}
+
+bool is_in(vector<Polygon> &outer, vector<Polygon> &inner, Parabola &p, vector<Point> &vp) {
+  p.generate_points(vp);
+  bool in_outer = false;
+  for(vector<Polygon>::iterator h=outer.begin(); h!=outer.end(); ++h) {
+    if( CGAL::bounded_side_2(h->vertices_begin(), h->vertices_end(), vp[0], K()) == CGAL::ON_BOUNDED_SIDE ) {
+      in_outer = true;
+      break;
+    }
+  }
+  if( in_outer ) {
+    for(vector<Polygon>::iterator h=inner.begin(); h!=inner.end(); ++h) {
+      if( CGAL::bounded_side_2(h->vertices_begin(), h->vertices_end(), vp[0], K()) != CGAL::ON_UNBOUNDED_SIDE ) {
+        return false;
+      }
+    }
+    return true;
+  } else {
+    return false;
+  }
+}
+
+int main(int argn, char **argv) {
   const char* filename = argv[1];
   ifstream input_file (filename);
   if (! input_file.is_open()) {
@@ -51,42 +100,37 @@ int main(int argn, char **argv)
     return -1;
   }
 
-  // Read a polygon with holes from a file.
-  Polygon outerP;
-  unsigned int num_holes;
+  // Read polygons from a file.
+  unsigned int total_poly;
+  input_file >> total_poly;
 
-  input_file >> outerP;
-  input_file >> num_holes;
+  vector<Polygon> outer;
+  vector<Polygon> inner;
 
-  std::vector<Polygon>  holes (num_holes);
-  unsigned int k;
-
-  for (k = 0; k < num_holes; k++) {
-    cerr << k << "/" << num_holes << endl;
-    input_file >> holes[k];
+  for (unsigned int k = 0; k < total_poly; k++) {
+    cerr << k << "/" << total_poly << endl;
+    unsigned int hole;
+    input_file >> hole;
+    Polygon poly;
+    input_file >> poly;
+    if( hole == 0 ) {
+      outer.push_back(poly);
+    } else {
+      inner.push_back(poly);
+    }
   }
-
-  Polygon_with_holes poly (outerP, holes.begin(), holes.end());
 
   cerr << "loaded" << endl;
 
 
-  SDG2          sdg;
-  SDG2::Site_2  site;
+  SDG2 sdg;
 
-//  cerr << "insert outer..." << endl << flush;
-  for(Edge_const_iterator i=poly.outer_boundary().edges_begin(); i!=poly.outer_boundary().edges_end(); ++i ) {
-    site = SDG2::Site_2::construct_site_2(i->source(),i->target());
-    sdg.insert( site );
+  for(vector<Polygon>::iterator h=outer.begin(); h!=outer.end(); ++h) {
+    insert_polygon(sdg, *h);
   }
 
-  for(Hole_const_iterator h=poly.holes_begin(); h!=poly.holes_end(); ++h) {
-//    cerr << "insert inner..." << *h << endl << flush;
-    for(Edge_const_iterator i=h->edges_begin(); i!=h->edges_end(); ++i ) {
-//      cerr << "insert edge..." << *i << endl << flush;
-      site = SDG2::Site_2::construct_site_2(i->source(),i->target());
-      sdg.insert( site );
-    }
+  for(vector<Polygon>::iterator h=inner.begin(); h!=inner.end(); ++h) {
+    insert_polygon(sdg, *h);
   }
 
   cout.setf(ios::fixed,ios::floatfield);
@@ -103,41 +147,21 @@ int main(int argn, char **argv)
       cerr << "line: " << l << endl;
     } else if (CGAL::assign(s, o)) {
       //cerr << "segment: " << s << endl;
-      // Le segement en entier est d'un seul cote.
-      if( poly.outer_boundary().bounded_side(s.source()) == CGAL::ON_BOUNDED_SIDE && poly.outer_boundary().bounded_side(s.target()) == CGAL::ON_BOUNDED_SIDE) {
-        bool out = true;
-        for(Hole_const_iterator h=poly.holes_begin(); h!=poly.holes_end(); ++h) {
-          if(h->bounded_side(s.source()) != CGAL::ON_UNBOUNDED_SIDE || h->bounded_side(s.target()) != CGAL::ON_UNBOUNDED_SIDE) {
-            out = false;
-            break;
-          }
-        }
-        if( out ) {
-          //cout << "<path d='M" << s << "'/>" << endl;
-          cout << "<trkseg><trkpt lat='" << s.source().x() << "' lon='" << s.source().y() << "'/><trkpt lat='" << s.target().x() << "' lon='" << s.target().y() << "'/></trkseg>" << endl;
-        }
+      if( is_in(outer, inner, s) ) {
+        //cout << "<path d='M" << s << "'/>" << endl;
+        cout << "<trkseg><trkpt lat='" << s.source().x() << "' lon='" << s.source().y() << "'/><trkpt lat='" << s.target().x() << "' lon='" << s.target().y() << "'/></trkseg>" << endl;
       }
     } else if (CGAL::assign(r, o)) {
       cerr << "ray: " << r << endl;
     } else if (CGAL::assign(p, o)) {
       //cerr << p << endl;
-      std::vector<Point> vp;
-      p.generate_points(vp);
-      if( CGAL::bounded_side_2(poly.outer_boundary().vertices_begin(), poly.outer_boundary().vertices_end(), vp[0], K()) == CGAL::ON_BOUNDED_SIDE ) {
-        bool out = true;
-        for(Hole_const_iterator h=poly.holes_begin(); h!=poly.holes_end(); ++h) {
-          if( CGAL::bounded_side_2(h->vertices_begin(), h->vertices_end(), vp[0], K()) == CGAL::ON_BOUNDED_SIDE ) {
-            out = false;
-            break;
-          }
+      vector<Point> vp;
+      if( is_in(outer, inner, p, vp ) ) {
+        cout << "<trkseg>";
+        for(unsigned int i = 0; i < vp.size(); i++) {
+          cout << "<trkpt lat='" << vp[i].x() << "' lon='" << vp[i].y() << "'/>";
         }
-        if( out ) {
-          cout << "<trkseg>";
-          for(unsigned int i = 0; i < vp.size(); i++) {
-             cout << "<trkpt lat='" << vp[i].x() << "' lon='" << vp[i].y() << "'/>";
-          }
-          cout << "</trkseg>" << endl;
-        }
+        cout << "</trkseg>" << endl;
       }
     } else {
       cerr  << "?" << endl;

@@ -19,6 +19,7 @@ XPath.each(doc, 'osm/way' ) { |way|
   ways[Integer(way.attribute('id').value)] = refs
 }
 
+innerways = []
 relations = Hash.new{ |h,k| h[k] = [] }
 XPath.each(doc, 'osm/relation' ) { |rel|
   refs = []
@@ -32,20 +33,32 @@ XPath.each(doc, 'osm/relation' ) { |rel|
   XPath.each(rel, 'member[@type="way"][@role="inner"]/@ref') { |ref|
 #    <member type='way' ref='-12770' role='inner' />
     refs << Integer(ref.value)
+    innerways << Integer(ref.value)
   }
   relations[rel.attribute('id').value][1] = refs
 }
 
 puts ways.size
-ways.each { |id,nodeRefs|
-  puts nodeRefs.size
-  nodeRefs.each{ |node|
-    puts " #{nodes[node][0]} #{nodes[node][1]}"
+puts
+
+ways.each{ |id,refs|
+  if not innerways.include?(id)
+    puts refs.size
+    puts "0"
+    refs.each{ |node|
+      puts " #{nodes[node][0]} #{nodes[node][1]}"
+    }
+    puts
+  end
+}
+
+relations.each { |id,wayRefs|
+  wayRefs[1].each{ |wayRef|
+    puts wayRef.size
+    puts "1"
+    ways[wayRef].each{ |node|
+      puts " #{nodes[node][0]} #{nodes[node][1]}"
+    }
+    puts
   }
 }
-#  puts 'Polygon_with_holes poly(outer);'
-#  rel[1].each { |way|
-#    ways[way].each { |node|
-#      puts "hole.push_back( Point(#{nodes[node][0]},#{nodes[node][1]}) );"
-#    }
-#  }

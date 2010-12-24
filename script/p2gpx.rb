@@ -6,14 +6,25 @@
 
 nodes = {}
 ways = {}
+holes = {}
 id = -1
 wid = nil
+count_line=true
+first=true
 
 STDIN.each{ |line|
   c = line.strip.split(/ +/)
   if c.size == 1
-    wid = (id-=1)
-    ways[wid] = []
+    if first
+      first = false
+    elsif count_line
+      wid = (id-=1)
+      ways[wid] = []
+      count_line = false
+    else
+      holes[wid] = c[0][0]
+      count_line = true
+    end
   else
     nid = (id-=1)
     nodes[nid] = c
@@ -30,9 +41,11 @@ puts "<?xml version='1.0' encoding='UTF-8'?>
 ways.each{ |id,nodesRefs|
   puts "<trkseg>"
   nodesRefs.each{ |ref|
-    puts "<trkpt lat='#{nodes[ref][0]}' lon='#{nodes[ref][1]}'/>"
+    puts "<trkpt lat='#{nodes[ref][0]}' lon='#{nodes[ref][1]}'><extensions>#{holes[id]}</extensions></trkpt>"
   }
-  puts "<trkpt lat='#{nodes[nodesRefs[0]][0]}' lon='#{nodes[nodesRefs[0]][1]}'/>"
+  puts "<trkpt lat='#{nodes[nodesRefs[0]][0]}' lon='#{nodes[nodesRefs[0]][1]}'><extensions>#{holes[id]}</extensions></trkpt>"
+  # Repeat extensions into each trkpt because of buggy gpsbabel
+  puts "<extensions>#{holes[id]}</extensions>"
   puts "</trkseg>"
 }
 puts "</trk></gpx>"

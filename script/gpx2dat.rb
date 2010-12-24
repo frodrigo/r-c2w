@@ -12,30 +12,28 @@ file = File.new(ARGV[0])
 doc = Document.new(file)
 
 ways = []
+hole = {}
 XPath.each(doc, 'gpx/trk/trkseg' ) { |trkseg|
   way = []
   XPath.each(trkseg, 'trkpt' ) { |pt|
     way << [pt.attribute('lat').value,pt.attribute('lon').value]
   }
+  is_hole = XPath.first(trkseg, 'trkpt/extensions')
+  if is_hole
+    is_hole = is_hole.text
+  else
+    is_hole = '0'
+  end
+  hole[way] = is_hole
   ways << way
 }
 
-max = ways.to_a.max{ |a,b| a.size <=> b.size }
-puts max.size
-max.each{ |node|
-  puts " #{node[0]} #{node[1]}"
-}
-puts ''
-
-puts ways.size-1
-puts ''
+puts ways.size
 
 ways.each{ |nodes|
-  if nodes != max
-    puts nodes.size
-    nodes.each{ |node|
-      puts " #{node[0]} #{node[1]}"
-    }
-    puts ''
-  end
+  puts hole[nodes]
+  puts nodes.size
+  nodes.each{ |node|
+    puts " #{node[0]} #{node[1]}"
+  }
 }
