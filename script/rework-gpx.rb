@@ -1,6 +1,6 @@
 require 'rexml/document'
 include REXML
-require 'tools/kdtree.rb'
+require './script/kdtree.rb'
 
 class P2 < Array
     def initialize(*a)

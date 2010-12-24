@@ -1,3 +1,41 @@
 Object
+======
+Automatic extraction of way and waterway from french vector cadastre.
+
 
 Dependencies
+============
+Build
+- gcc
+- cmake
+- cgal Computational Geometry Algorithms Library
+Run
+- qadastre project with land extraction support : http://gitorious.org/~frodrigo/qadastre/frodrigo-qadastre2osm
+- ruby
+
+
+Build
+=====
+Build poly directory, no extra dependency required.
+$ cd poly
+$ sh make
+
+Build skeleton directory, need camke and cgal lib.
+$ cd skeleton
+$ cmake -D CMAKE_BUILD_TYPE=Release .
+$ make
+
+
+Principle
+=========
+From city limit and used field extract public space. From this, compute volonoi diagram to extract street skeleton.
+
+
+Usage
+=====
+Download and extract data from cadastre with project qadastre. Needed data for r-c2w are lands, water and city-limits.
+
+Run r-c2w with extract osm file base name.
+$ sh r-c2w.sh ../quadastre2osm/F4402-SAINTE-FOY-LA-GRANDE
+
+All result files are in same directory as input files. There is a file for street and one for waterway as *.skel.gpx.
