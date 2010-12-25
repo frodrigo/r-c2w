@@ -28,6 +28,24 @@ XPath.each(doc, 'gpx/trk/trkseg' ) { |trkseg|
   ways << way
 }
 
+ways = ways.collect{ |nodes|
+  ret = []
+  # Clean equals consecutive nodes
+  0.upto(nodes.size-1).each{ |i|
+    if nodes[i] != ret[-1]
+      ret << nodes[i]
+    end
+  }
+  # Clean same ends nodes
+  ret = if ret[0] == ret[-1]
+    ret[0..-2]
+  else
+    ret
+  end
+  hole[ret] = hole[nodes]
+  ret
+}.select{ |nodes| nodes.size >= 3 }
+
 puts ways.size
 
 ways.each{ |nodes|

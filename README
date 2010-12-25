@@ -1,6 +1,7 @@
 Object
 ======
 Automatic extraction of way and waterway from french vector cadastre.
+By Frederic Rodrigo, 2010, AGPL3
 
 
 Dependencies
@@ -22,7 +23,7 @@ $ sh make
 
 Build skeleton directory, need camke and cgal lib.
 $ cd skeleton
-$ cmake -D CMAKE_BUILD_TYPE=Release .
+$ cmake .
 $ make
 
 

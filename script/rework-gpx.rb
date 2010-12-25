@@ -78,6 +78,9 @@ def merge_linestring
   touch = false
   STDERR.puts @ways.size
   @ends.select{ |k,v| v.size == 2 }.each{ |k,e|
+    if e.size != 2
+      next
+    end
     w1 = e[0]
     w2 = e[1]
     if w1[-1] == w2[0]
@@ -143,7 +146,7 @@ merge_linestring
 #    con = (w[0] == k)? w[-1] : w[0]
     l = 0
     0.upto(way.size-2).each{ |i| l+= Math.sqrt( (way[i][0]-way[i+1][0])*(way[i][0]-way[i+1][0]) + (way[i][1]-way[i+1][1])*(way[i][1]-way[i+1][1]) ) }
-    if l < 2e-4 # FIXME marche pour la Fance metrop
+    if l < 3e-4 # FIXME marche pour la Fance metrop
       @ends.delete(k)
       #@ways_ends[way][0].delete(way)
       #@ways_ends[way][1].delete(way)

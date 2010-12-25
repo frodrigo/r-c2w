@@ -113,6 +113,9 @@ int main(int argn, char **argv) {
     input_file >> hole;
     Polygon poly;
     input_file >> poly;
+    if( ! poly.is_simple() ) {
+      cerr << "Poly " << k << " is not simple" << endl;
+    }
     if( hole == 0 ) {
       outer.push_back(poly);
     } else {
