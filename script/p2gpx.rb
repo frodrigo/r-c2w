@@ -1,5 +1,6 @@
 
 #3
+#0
 #63
 # 0.216376000000000  44.839097000000002
 # 0.216389000000000  44.839047000000001
@@ -9,7 +10,7 @@ ways = {}
 holes = {}
 id = -1
 wid = nil
-count_line=true
+hole_line=true
 first=true
 
 STDIN.each{ |line|
@@ -17,13 +18,13 @@ STDIN.each{ |line|
   if c.size == 1
     if first
       first = false
-    elsif count_line
+    elsif hole_line
       wid = (id-=1)
       ways[wid] = []
-      count_line = false
-    else
       holes[wid] = c[0][0]
-      count_line = true
+      hole_line = false
+    else
+      hole_line = true
     end
   else
     nid = (id-=1)

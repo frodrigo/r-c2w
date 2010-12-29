@@ -40,6 +40,8 @@ typedef CGAL::Parabola_segment_2<Gt> Parabola;
 
 #include <CGAL/Polygon_2_algorithms.h>
 
+#include "load.h"
+
 void insert_polygon(SDG2 &sdg, Polygon &p) {
 //  cerr << "insert inner..." << p << endl << flush;
   for(Edge_const_iterator i=p.edges_begin(); i!=p.edges_end(); ++i ) {
@@ -94,36 +96,15 @@ bool is_in(vector<Polygon> &outer, vector<Polygon> &inner, Parabola &p, vector<P
 
 int main(int argn, char **argv) {
   const char* filename = argv[1];
-  ifstream input_file (filename);
-  if (! input_file.is_open()) {
-    cerr << "Failed to open the " << filename << endl;
-    return -1;
-  }
-
-  // Read polygons from a file.
-  unsigned int total_poly;
-  input_file >> total_poly;
-
   vector<Polygon> outer;
   vector<Polygon> inner;
 
-  for (unsigned int k = 0; k < total_poly; k++) {
-    cerr << k << "/" << total_poly << endl;
-    unsigned int hole;
-    input_file >> hole;
-    Polygon poly;
-    input_file >> poly;
-    if( ! poly.is_simple() ) {
-      cerr << "Poly " << k << " is not simple" << endl;
-    }
-    if( hole == 0 ) {
-      outer.push_back(poly);
-    } else {
-      inner.push_back(poly);
-    }
+  if(! load(filename, outer, inner) ) {
+    cerr << "Failed to open the " << filename << endl;
+    return -1;
+  } else {
+    cerr << "loaded" << endl;
   }
-
-  cerr << "loaded" << endl;
 
 
   SDG2 sdg;

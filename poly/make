@@ -1,1 +1,2 @@
 gcc -g poly.c gpc.c -o poly
+gcc -g self-union.c gpc.c -o self-union

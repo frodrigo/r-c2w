@@ -1038,12 +1038,12 @@ void gpc_read_polygon(FILE *fp, int read_hole_flags, gpc_polygon *p)
          * sizeof(gpc_vertex_list), "contour creation", gpc_vertex_list);
   for (c= 0; c < p->num_contours; c++)
   {
-    fscanf(fp, "%d", &(p->contour[c].num_vertices));
-
     if (read_hole_flags)
       fscanf(fp, "%d", &(p->hole[c]));
     else
       p->hole[c]= FALSE; /* Assume all contours to be external */
+
+    fscanf(fp, "%d", &(p->contour[c].num_vertices));
 
     MALLOC(p->contour[c].vertex, p->contour[c].num_vertices
            * sizeof(gpc_vertex), "vertex creation", gpc_vertex);
@@ -1061,16 +1061,24 @@ void gpc_write_polygon(FILE *fp, int write_hole_flags, gpc_polygon *p)
   fprintf(fp, "%d\n", p->num_contours);
   for (c= 0; c < p->num_contours; c++)
   {
-    fprintf(fp, "%d\n", p->contour[c].num_vertices);
-
     if (write_hole_flags)
       fprintf(fp, "%d\n", p->hole[c]);
-    
+
+    fprintf(fp, "%d\n", p->contour[c].num_vertices);
+
     for (v= 0; v < p->contour[c].num_vertices; v++)
       fprintf(fp, "% .6lf % .6lf\n",
               DBL_DIG, p->contour[c].vertex[v].x,
               DBL_DIG, p->contour[c].vertex[v].y);
   }
+}
+
+
+void gpc_init_empty_polygon(gpc_polygon *p)
+{
+  p->num_contours = 0;
+  p->hole = NULL;
+  p->contour = NULL;
 }
 
 

@@ -52,6 +52,6 @@ ways.each{ |nodes|
   puts hole[nodes]
   puts nodes.size
   nodes.each{ |node|
-    puts " #{node[0]} #{node[1]}"
+    puts "#{node[0]} #{node[1]}"
   }
 }
