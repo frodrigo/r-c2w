@@ -109,11 +109,14 @@ int main(int argn, char **argv) {
 
   SDG2 sdg;
 
+  int n = 0;
   for(vector<Polygon>::iterator h=outer.begin(); h!=outer.end(); ++h) {
+    cerr << (++n) << endl;
     insert_polygon(sdg, *h);
   }
 
   for(vector<Polygon>::iterator h=inner.begin(); h!=inner.end(); ++h) {
+    cerr << (++n) << endl;
     insert_polygon(sdg, *h);
   }
 

@@ -6,12 +6,15 @@
 	./poly/poly union "$*-lands.p" "$*-water.p" "$*-lands.union.tmp"
 	ruby script/p2pclean.rb < "$*-lands.union.tmp" > "$*-lands.union.p"
 
-#%-lands.erode.p: %-lands.union.simpl.p erode/erode poly/self-union
-#	./erode/erode "$<" "$@.tmp1" 0.0003
-#	./poly/self-union "$@.tmp1" "$@"
+%-lands.convo.p: %-lands.union.simpl.p convo/convo
+	./convo/convo "$<" "$@" 0.0003
 
-%-lands.area.p: %-lands.union.p %-lands.erode.p %-city-limit.p poly/poly erode/erode
-	./poly/poly diff "$*-city-limit.p" "$*-lands.union.p" "$@"
+%-lands.area.p: %-lands.union.p %-lands.convo.p %-city-limit.p convo/poly convo/convo script/p2pclean.rb
+	./convo/poly diff "$*-city-limit.p" "$*-lands.union.p" "$@.tmp1"
+	./convo/poly diff "$*-city-limit.p" "$*-lands.convo.p" "$@.tmp2"
+	./convo/convo "$@.tmp2" "$@.tmp3" 0.0004
+	./convo/poly diff "$@.tmp1" "$@.tmp3" "$@.tmp4"
+	ruby script/p2pclean.rb < "$@.tmp4" > "$@"
 
 %-water.area.p: %-water.p poly/poly
 	./poly/poly union "$<" "$<" "$@"
@@ -34,3 +37,7 @@
 
 %.simpl.p: %.simpl.gpx script/gpx2p.rb
 	ruby script/gpx2p.rb "$<" > "$@"
+
+convo/poly convo/convo skeleton/vononoi-skeleton:
+	@echo Build $@ first
+	@exit 1

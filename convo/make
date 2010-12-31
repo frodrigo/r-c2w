@@ -1,0 +1,2 @@
+g++ -g convo.cpp -o convo
+g++ -g poly.cpp -o poly

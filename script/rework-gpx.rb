@@ -21,8 +21,6 @@ class P2 < Array
 end
 
 class KDTree
-    attr_accessor :black_list
-
     def getInBox(p, e)
         find([p[0]-e,p[0]+e], [p[1]-e,p[1]+e])
     end
@@ -34,7 +32,7 @@ class KDTree
             p != pp
         }
         r0 = r.select{ |pp|
-            p[2] != pp[2] and not self.black_list.include?(pp)
+            p[2] != pp[2]
         }
         return nil if r0 == [] or (p[0]==r0[0] and p[1] ==r0[1]) # il n'y a pas de gap
         if r[r.index(r0[0])..r.rindex(r0[0])].all?{ |pp| # verif que tous les points le plus proche ne sont pas sur la way de p
@@ -61,61 +59,87 @@ XPath.each(doc, 'gpx/trk/trkseg' ) { |trkseg|
 }
 
 
-
-
-# Construit les linestring
-@ends = Hash.new{ |h,k| h[k] = [] }
-
-@ways_ends = {}
-@ways.each{ |w|
-  @ends[w[0]] << w
-  @ends[w[-1]] << w
-  @ways_ends[w] = [@ends[w[0]], @ends[w[-1]]]
-}
-
 def merge_linestring
   begin
+  STDERR.puts "#{@ways.size} to merge"
+  ends = @ends.select{ |k,v| v.size == 2}
   touch = false
-  STDERR.puts @ways.size
-  @ends.select{ |k,v| v.size == 2 }.each{ |k,e|
-    if e.size != 2
-      next
-    end
+  ends.each{ |k,e|
     w1 = e[0]
     w2 = e[1]
-    if w1[-1] == w2[0]
-      w = w1+w2
-    elsif w1[-1] == w2[-1]
-      w = w1+w2.reverse
-    elsif w1[0] == w2[0]
-      w = w1.reverse+w2
-    elsif w1[0] == w2[-1]
-      w = w2+w1
+    if w1 == w2
+      next
+    end
+
+    @ends[w1[0]].delete(w1) or raise 'fail!'
+    @ends[w1[-1]].delete(w1) or raise 'fail!'
+    @ends[w2[0]].delete(w2) or raise 'fail!'
+    @ends[w2[-1]].delete(w2) or raise 'fail!'
+    @ends.delete(k) or raise 'fail!'
+    @ways.delete(w1) or raise 'fail!'
+    @ways.delete(w2) or raise 'fail!'
+
+    if w1[-1] == k
+      if w2[0] == k
+        w1
+        w2
+      elsif w2[-1] == k
+        w1
+        w2 = w2.reverse
+      else
+        raise 'fail!'
+      end
+    elsif w1[0] == k
+      if w2[0] == k
+        w1 = w1.reverse
+        w2
+      elsif w2[-1] == k
+        w1 = w1.reverse
+        w2 = w2.reverse
+      else
+        raise 'fail!'
+      end
     else
       raise 'fail!'
     end
+
+    w = w1[0..-2] + w2
+
     @ends[w[0]] << w
     @ends[w[-1]] << w
-    @ways_ends[w] = [@ends[w[0]], @ends[w[-1]]]
     @ways << w
-
-    @ways_ends[w1][0].delete(w1)
-    @ways_ends[w1][1].delete(w1)
-    @ways_ends[w2][0].delete(w2)
-    @ways_ends[w2][1].delete(w2)
-    @ends.delete(k)
-    @ways.delete(w1)
-    @ways.delete(w2)
     touch = true
   }
   end while touch
-  STDERR.puts @ways.size
+  STDERR.puts "#{@ways.size} result"
 end
+
+STDERR.puts "Uniq node per way"
+@ways.collect!{ |way|
+  ret = []
+  way.each{ |w|
+    ret << w if not ret.include?(w)
+  }
+  ret
+}
+
+@ways.select!{ |way|
+  way.size >= 2
+}
+
+
+STDERR.puts "Build linestring"
+@ends = Hash.new{ |h,k| h[k] = [] }
+
+@ways.each{ |w|
+  @ends[w[0]] << w
+  @ends[w[-1]] << w
+}
 
 merge_linestring
 
 
-# Comble des petits vides entres les ways
+STDERR.puts "Fill small gaps between ways"
 points = []
 @ways.each{ |way|
   points << way[0] + [way]
@@ -123,33 +147,32 @@ points = []
 }
 
 kdtree = KDTree.new(points, 2)
-kdtree.black_list = []
+black_list = []
 
 @ends.select{ |k,v| v.size == 1 }.each{ |k,e|
   n = kdtree.nearest(k, 5e-6)
   if n
-    way = [k,n[0..1]]
-    @ways << way
-    kdtree.black_list << k
-    @ends[k] << way
-    @ends[n] << way
-    @ways_ends[way] = [k,n]
+    n = n[0..1]
+    if k != n and not black_list.include?([n,k]) # Dosen't add reverse segement
+      way = [k,n]
+      @ways << way
+      @ends[k] << way
+      @ends[n] << way
+      black_list << way
+    end
   end
 }
 
 merge_linestring
 
-# Prune
+STDERR.puts "Prune"
 @ends.select{ |k,v| v.size == 1 }.each{ |k,w|
   way = w[0]
   if way
-#    con = (w[0] == k)? w[-1] : w[0]
     l = 0
     0.upto(way.size-2).each{ |i| l+= Math.sqrt( (way[i][0]-way[i+1][0])*(way[i][0]-way[i+1][0]) + (way[i][1]-way[i+1][1])*(way[i][1]-way[i+1][1]) ) }
     if l < 3e-4 # FIXME marche pour la Fance metrop
       @ends.delete(k)
-      #@ways_ends[way][0].delete(way)
-      #@ways_ends[way][1].delete(way)
       @ways.delete(way)
     end
   end
