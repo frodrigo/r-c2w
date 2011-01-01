@@ -26,25 +26,33 @@ STDIN.each{ |line|
       hole_line = true
     end
   else
-    way << c
+    way << [Float(c[0]),Float(c[1])]
   end
 }
 ways[way] = hole if way
 
 
+# Node unicity
 ways2 = {}
 ways.each{ |nodes, hole|
-  ret = []
-  # Clean nodes
-  0.upto(nodes.size-1).each{ |i|
-    if not ret.include?(nodes[i])
-      ret << nodes[i]
-    end
-  }
+  ret = nodes.uniq
   ways2[ret] = hole
 }
+# Remove triangle, remove in fact small artefact like very tin gaps between poly
 ways = ways2.select{ |nodes,hole|
   nodes.size > 3
+}
+# Remove small poly, like artefect and swimming pool or realy small lands
+ways.select!{ |nodes,hole|
+  (x_min,y_min) = nodes[0]
+  (x_max,y_max) = nodes[0]
+  nodes.each{ |n|
+    x_min = x_min < n[0] ? x_min : n[0]
+    y_min = y_min < n[1] ? y_min : n[1]
+    x_max = x_max > n[0] ? x_max : n[0]
+    y_max = y_max > n[1] ? y_max : n[1]
+  }
+  (x_max-x_min) > 2e-4 or (y_max-y_min) > 2e-4
 }
 
 

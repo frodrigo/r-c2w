@@ -1,4 +1,6 @@
 
+.PRECIOUS : %.p %.gpx
+
 %.p: %.osm script/osm2p.rb
 	ruby script/osm2p.rb "$<" > "$@"
 
@@ -16,8 +18,9 @@
 	./convo/poly diff "$@.tmp1" "$@.tmp3" "$@.tmp4"
 	ruby script/p2pclean.rb < "$@.tmp4" > "$@"
 
-%-water.area.p: %-water.p poly/poly
-	./poly/poly union "$<" "$<" "$@"
+%-water.area.p: %-water.p poly/poly script/p2pclean.rb
+	./poly/poly union "$<" "$<" "$@.tmp"
+	ruby script/p2pclean.rb < "$@.tmp" > "$@"
 
 %.skel.gpx: %.area.simpl.p skeleton/vononoi-skeleton
 	./skeleton/vononoi-skeleton "$<" > "$@"
