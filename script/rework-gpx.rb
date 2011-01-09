@@ -1,6 +1,8 @@
 require 'rexml/document'
 include REXML
 require './script/kdtree.rb'
+require 'set'
+
 
 class P2 < Array
     def initialize(*a)
@@ -45,7 +47,7 @@ file = File.new(ARGV[0])
 water = ARGV[1] == 'water'
 doc = Document.new(file)
 
-@ways = []
+@ways = Set.new
 XPath.each(doc, 'gpx/trk/trkseg' ) { |trkseg|
   way = []
   XPath.each(trkseg, 'trkpt' ) { |pt|
@@ -61,8 +63,8 @@ def merge_linestring
     ends = @ends.select{ |k,v| v.size == 2}
     touch = false
     ends.each{ |k,e|
-      w1 = e[0]
-      w2 = e[1]
+      w1 = e.to_a[0]
+      w2 = e.to_a[1]
       if w1 == w2
         next
       end
@@ -123,7 +125,7 @@ def fill_gap(length)
     if e.size > 1
       next
     end
-    n = kdtree.nearest(k, length, e[0])
+    n = kdtree.nearest(k, length, e.to_a[0])
     if n
       n = n[0..1]
       if k != n and not black_list.include?([k,n]) and not black_list.include?([n,k]) # Dosen't add reverse segement
@@ -142,7 +144,7 @@ def prune(length, loop=true)
     STDERR.puts "#{@ends.size} ends"
     touch = false
     @ends.select{ |k,v| v.size == 1 }.each{ |k,w|
-      way = w[0]
+      way = w.to_a[0]
       if way
         l = 0
         0.upto(way.size-2).each{ |i| l+= Math.sqrt( (way[i][0]-way[i+1][0])*(way[i][0]-way[i+1][0]) + (way[i][1]-way[i+1][1])*(way[i][1]-way[i+1][1]) ) }
@@ -178,7 +180,7 @@ STDERR.puts "Uniq node per way"
 
 
 STDERR.puts "Build linestring"
-@ends = Hash.new{ |h,k| h[k] = [] }
+@ends = Hash.new{ |h,k| h[k] = Set.new }
 
 @ways.each{ |w|
   @ends[w[0]] << w
