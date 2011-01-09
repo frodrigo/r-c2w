@@ -25,8 +25,11 @@
 %.skel.gpx: %.area.simpl.p skeleton/vononoi-skeleton
 	./skeleton/vononoi-skeleton "$<" > "$@"
 
-%.skel-clean.gpx: %.skel.gpx script/rework-gpx.rb
+%-lands.skel-clean.gpx: %-lands.skel.gpx script/rework-gpx.rb
 	ruby script/rework-gpx.rb "$<" > "$@"
+
+%-water.skel-clean.gpx: %-water.skel.gpx script/rework-gpx.rb
+	ruby script/rework-gpx.rb "$<" water > "$@"
 
 
 # Simplify .p

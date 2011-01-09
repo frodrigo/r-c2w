@@ -141,11 +141,9 @@ int main(int argn, char **argv) {
       //cerr << p << endl;
       vector<Point> vp;
       if( is_in(outer, inner, p, vp ) ) {
-        cout << "<trkseg>";
-        for(unsigned int i = 0; i < vp.size(); i++) {
-          cout << "<trkpt lat='" << vp[i].x() << "' lon='" << vp[i].y() << "'/>";
+        for(unsigned int i = 0; i < vp.size()-1; i++) {
+          cout << "<trkseg><trkpt lat='" << vp[i].x() << "' lon='" << vp[i].y() << "'/><trkpt lat='" << vp[i+1].x() << "' lon='" << vp[i+1].y() << "'/></trkseg>";
         }
-        cout << "</trkseg>" << endl;
       }
     } else {
       cerr  << "?" << endl;

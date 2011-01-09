@@ -52,7 +52,7 @@ ways.select!{ |nodes,hole|
     x_max = x_max > n[0] ? x_max : n[0]
     y_max = y_max > n[1] ? y_max : n[1]
   }
-  (x_max-x_min) > 2e-4 or (y_max-y_min) > 2e-4
+  (x_max-x_min) > 1e-4 or (y_max-y_min) > 1e-4
 }
 
 
