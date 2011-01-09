@@ -11,7 +11,7 @@ Build
 - cmake
 - cgal Computational Geometry Algorithms Library
 Run
-- qadastre project with land extraction support : http://gitorious.org/~frodrigo/qadastre/frodrigo-qadastre2osm
+- qadastre project with land extraction support, use --convert-with-lands : http://gitorious.org/~frodrigo/qadastre/frodrigo-qadastre2osm
 - ruby
 
 
@@ -25,6 +25,10 @@ Build skeleton directory, need camke and cgal lib.
 $ cd skeleton
 $ cmake .
 $ make
+
+Build convo directory, need libboost, but already cgal dependency.
+$ cd convo
+$ sh make
 
 
 Principle

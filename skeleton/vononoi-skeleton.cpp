@@ -1,32 +1,31 @@
 #include <iostream>
-
+#include <fstream>
 using namespace std;
 
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Voronoi_diagram_2.h>
+#include <CGAL/Gmpq.h>
+#include <CGAL/Simple_cartesian.h>
+#include <CGAL/Segment_Delaunay_graph_hierarchy_2.h>
+#include <CGAL/Segment_Delaunay_graph_traits_2.h>
+#include <CGAL/Segment_Delaunay_graph_adaptation_traits_2.h>
+
+typedef CGAL::Gmpq ENT;
+typedef CGAL::Simple_cartesian<double> K;
+typedef CGAL::Simple_cartesian<ENT> EK;
+
+typedef CGAL::Segment_Delaunay_graph_filtered_traits_without_intersections_2
+  <K,CGAL::Field_with_sqrt_tag, EK,
+  CGAL::Integral_domain_without_division_tag> Gt;
+
+
+typedef CGAL::Segment_Delaunay_graph_hierarchy_2<Gt> SDG2;
+typedef CGAL::Segment_Delaunay_graph_adaptation_traits_2<SDG2> TRAIT;
+
+typedef SDG2::Point_2 Point;
+
 #include <CGAL/Polygon_2.h>
-#include <CGAL/create_straight_skeleton_from_polygon_with_holes_2.h>
-
-typedef CGAL::Exact_predicates_inexact_constructions_kernel K ;
-
-typedef K::Point_2                    Point ;
-typedef CGAL::Polygon_2<K>            Polygon ;
-
-
+typedef CGAL::Polygon_2<K> Polygon;
 typedef Polygon::Edge_const_iterator Edge_const_iterator;
-
-
-// typedefs for the traits and the algorithm
-#include <CGAL/Segment_Delaunay_graph_filtered_traits_2.h>
-#include <CGAL/Segment_Delaunay_graph_2.h>
-typedef CGAL::Segment_Delaunay_graph_filtered_traits_2<K,
-/* The construction kernel allows for / and sqrt */    CGAL::Field_with_sqrt_tag,
-       K,
-/* The exact kernel supports field ops exactly */      CGAL::Field_tag>  Gt;
-
-typedef CGAL::Segment_Delaunay_graph_2<Gt>             SDG2;
-
-//#include <CGAL/Segment_Delaunay_graph_site_2.h>
-//typedef CGAL::Segment_Delaunay_graph_site_2<CK> Segment_Delaunay_graph_site_2;
 
 
 typedef CGAL::Line_2<K> Line;
@@ -38,7 +37,6 @@ typedef CGAL::Conic_2<K> Conic;
 #include <CGAL/Parabola_segment_2.h>
 typedef CGAL::Parabola_segment_2<Gt> Parabola;
 
-#include <CGAL/Polygon_2_algorithms.h>
 
 #include "load.h"
 
@@ -46,9 +44,7 @@ void insert_polygon(SDG2 &sdg, Polygon &p) {
 //  cerr << "insert inner..." << p << endl << flush;
   for(Edge_const_iterator i=p.edges_begin(); i!=p.edges_end(); ++i ) {
 //    cerr << "insert edge..." << *i << endl << flush;
-    SDG2::Site_2 site;
-    site = SDG2::Site_2::construct_site_2(i->source(),i->target());
-    sdg.insert( site );
+    sdg.insert(i->source(),i->target());
   }
 }
 
@@ -93,6 +89,7 @@ bool is_in(vector<Polygon> &outer, vector<Polygon> &inner, Parabola &p, vector<P
     return false;
   }
 }
+
 
 int main(int argn, char **argv) {
   const char* filename = argv[1];
