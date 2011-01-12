@@ -10,9 +10,11 @@ Build
 - gcc
 - cmake
 - cgal Computational Geometry Algorithms Library
+- boost library version > 1.44 
+
 Run
 - qadastre project with land extraction support, use --convert-with-lands : http://gitorious.org/~frodrigo/qadastre/frodrigo-qadastre2osm
-- ruby
+- ruby (>= version 1.9)
 
 
 Build
