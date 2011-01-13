@@ -56,3 +56,4 @@ Place the list file in root directory of project. Fix QADASTRE path in r-c2w-lis
 Then run:
 $ bash r-c2w-list.sh
 Now take a coffee, print walking-paper and go map New Zeland (you can take your time).
+This last script work incrementaly, you can re-run if you stop it or to retry if something go wrong.

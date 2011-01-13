@@ -65,7 +65,7 @@ def merge_linestring
     ends.each{ |k,e|
       w1 = e.to_a[0]
       w2 = e.to_a[1]
-      if w1 == w2
+      if not w1 or not w2 or w1 == w2
         next
       end
 
