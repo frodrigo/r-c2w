@@ -191,12 +191,10 @@ STDERR.puts "Initial merge"
 merge_linestring
 
 
-STDERR.puts "Prune"
-prune(1e-4, false) # Clean small thing
-
 STDERR.puts "Fill small gaps between ways"
 fill_gap(5e-6)
 merge_linestring
+
 
 STDERR.puts "Prune"
 # FIXME marche pour la Fance metrop

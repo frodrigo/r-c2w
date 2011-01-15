@@ -19,10 +19,6 @@ Run
 
 Build
 =====
-Build poly directory, no extra dependency required.
-$ cd poly
-$ sh make
-
 Build skeleton directory, need camke and cgal lib.
 $ cd skeleton
 $ cmake .

@@ -1,1 +1,0 @@
-gcc -g poly.c gpc.c -o poly
