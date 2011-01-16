@@ -1,14 +1,14 @@
 
 struct pdata {
-  pdata(polygon poly_, unsigned int hole_, int min_x_): poly(poly_), hole(hole_), min_x(min_x_) {}
-  polygon poly;
+  pdata(polygon_set poly_, unsigned int hole_, int min_x_): poly(poly_), hole(hole_), min_x(min_x_) {}
+  polygon_set poly;
   unsigned int hole;
   int min_x;
 };
 
 bool compare_min_poly(pdata p1, pdata p2)
 {
-  return p1.min_x < p2.min_x;
+  return p1.min_x == p2.min_x ? p1.hole < p2.hole : p1.min_x < p2.min_x;
 }
 
 bool load(const char* filename, polygon_set &ps) {
@@ -41,21 +41,23 @@ bool load(const char* filename, polygon_set &ps) {
 
     polygon poly;
     boost::polygon::set_points(poly, pts.begin(), pts.end());
-    polygon_list.push_back(pdata(poly, hole, min_x));
+    polygon_set wps;
+    wps.insert(poly, hole == 1);
+    polygon_list.push_back(pdata(wps, hole, min_x));
   }
 
   polygon_list.sort(compare_min_poly);
 
-  unsigned int k = 0;
-  for (std::list<pdata>::iterator i=polygon_list.begin(); i!=polygon_list.end() ; ++i) {
-    cerr << (++k) << "/" << total_poly << "(" << i->poly.size() << "," << i->hole << ")" << endl;
-    if( i->hole == 0 ) {
-      ps += i->poly;
-    } else {
-      ps -= i->poly;
-    }
+  while (polygon_list.size() > 1) {
+    cerr << polygon_list.size() << "/" << total_poly << endl;
+    polygon_set wps1 = polygon_list.front().poly;
+    polygon_list.pop_front();
+    polygon_set wps2 = polygon_list.front().poly;
+    polygon_list.pop_front();
+    polygon_list.push_back(pdata(wps1+wps2,0,0));
   }
 
+  ps = polygon_list.front().poly;
   return true;
 }
 
