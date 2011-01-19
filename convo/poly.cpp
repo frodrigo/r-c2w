@@ -17,8 +17,7 @@ using namespace boost::polygon::operators;
 int main(int argn, char **argv) {
   const char* op = argv[1];
   const char* p1filename = argv[2];
-  const char* p2filename = argv[3];
-  const char* outfilename = argv[4];
+  const char* outfilename;
 
   polygon_set ps1;
   if(! load(p1filename, ps1) ) {
@@ -28,19 +27,35 @@ int main(int argn, char **argv) {
     cerr << "loaded" << endl;
   }
 
-  polygon_set ps2;
-  if(! load(p2filename, ps2) ) {
-    cerr << "Failed to open the " << p2filename << endl;
-    return -1;
-  } else {
-    cerr << "loaded" << endl;
-  }
-
   polygon_set out;
-  if( op[0] == 'u' ) {
-    out = ps1 + ps2;
+
+  if( op[0] == 'd' ) {
+    //  diff3
+    const char* p2filename = argv[3];
+    const char* p3filename = argv[4];
+    outfilename = argv[5];
+
+    polygon_set ps2;
+    if(! load(p2filename, ps2) ) {
+      cerr << "Failed to open the " << p2filename << endl;
+      return -1;
+    } else {
+      cerr << "loaded" << endl;
+    }
+
+    polygon_set ps3;
+    if(! load(p3filename, ps3) ) {
+      cerr << "Failed to open the " << p3filename << endl;
+      return -1;
+    } else {
+      cerr << "loaded" << endl;
+    }
+
+    out = ps1 - (ps2 + ps3);
   } else {
-    out = ps1 - ps2;
+    // union1
+    outfilename = argv[3];
+    out = ps1;
   }
 
   if(! save(outfilename, out) ) {

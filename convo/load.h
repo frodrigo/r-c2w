@@ -1,14 +1,28 @@
 
 struct pdata {
-  pdata(polygon_set poly_, unsigned int hole_, int min_x_): poly(poly_), hole(hole_), min_x(min_x_) {}
+  pdata(polygon_set poly_, int min_x_): poly(poly_), min_x(min_x_) {}
   polygon_set poly;
-  unsigned int hole;
   int min_x;
 };
 
 bool compare_min_poly(pdata p1, pdata p2)
 {
-  return p1.min_x == p2.min_x ? p1.hole < p2.hole : p1.min_x < p2.min_x;
+  return p1.min_x < p2.min_x;
+}
+
+polygon_set &reduce_polygon_list(std::list<pdata> &polygon_list) {
+  polygon_list.sort(compare_min_poly);
+
+  while (polygon_list.size() > 1) {
+    cerr << polygon_list.size() << endl;
+    polygon_set wps1 = polygon_list.front().poly;
+    polygon_list.pop_front();
+    polygon_set wps2 = polygon_list.front().poly;
+    polygon_list.pop_front();
+    polygon_list.push_back(pdata(wps1+=wps2,0));
+  }
+
+  return polygon_list.front().poly;
 }
 
 bool load(const char* filename, polygon_set &ps) {
@@ -22,6 +36,7 @@ bool load(const char* filename, polygon_set &ps) {
   input_file >> total_poly;
 
   std::list<pdata> polygon_list;
+  pdata cur_data(polygon_set(),0);
   for (unsigned int k = 0; k < total_poly; k++) {
     unsigned int hole, nb;
     input_file >> hole;
@@ -41,23 +56,17 @@ bool load(const char* filename, polygon_set &ps) {
 
     polygon poly;
     boost::polygon::set_points(poly, pts.begin(), pts.end());
-    polygon_set wps;
-    wps.insert(poly, hole == 1);
-    polygon_list.push_back(pdata(wps, hole, min_x));
+    if (hole == 0) {
+      polygon_set wps;
+      wps.insert(poly, false);
+      cur_data = pdata(wps, min_x);
+      polygon_list.push_back(cur_data);
+    } else {
+      cur_data.poly.insert(poly, true);
+    }
   }
 
-  polygon_list.sort(compare_min_poly);
-
-  while (polygon_list.size() > 1) {
-    cerr << polygon_list.size() << "/" << total_poly << endl;
-    polygon_set wps1 = polygon_list.front().poly;
-    polygon_list.pop_front();
-    polygon_set wps2 = polygon_list.front().poly;
-    polygon_list.pop_front();
-    polygon_list.push_back(pdata(wps1+wps2,0,0));
-  }
-
-  ps = polygon_list.front().poly;
+  ps = reduce_polygon_list(polygon_list);
   return true;
 }
 

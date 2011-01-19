@@ -19,43 +19,53 @@ XPath.each(doc, 'osm/way' ) { |way|
   ways[Integer(way.attribute('id').value)] = refs
 }
 
-innerways = []
+relationways = []
 relations = Hash.new{ |h,k| h[k] = [] }
 XPath.each(doc, 'osm/relation' ) { |rel|
   refs = []
   XPath.each(rel, 'member[@type="way"][@role="outer"]/@ref') { |ref|
 #    <member type='way' ref='-12770' role='outer' />
     refs << Integer(ref.value)
+    relationways << Integer(ref.value)
   }
   relations[rel.attribute('id').value][0] = refs
 
-#  refs = []
-#  XPath.each(rel, 'member[@type="way"][@role="inner"]/@ref') { |ref|
-##    <member type='way' ref='-12770' role='inner' />
-#    refs << Integer(ref.value)
-#    innerways << Integer(ref.value)
-#  }
-#  relations[rel.attribute('id').value][1] = refs
+  refs = []
+  XPath.each(rel, 'member[@type="way"][@role="inner"]/@ref') { |ref|
+#    <member type='way' ref='-12770' role='inner' />
+    refs << Integer(ref.value)
+    relationways << Integer(ref.value)
+  }
+  relations[rel.attribute('id').value][1] = refs
 }
+
 
 puts ways.size
 
-ways.each{ |id,refs|
-#  if not innerways.include?(id)
-    puts "0"
-    puts refs.size
-    refs.each{ |node|
-      puts "#{nodes[node][0]} #{nodes[node][1]}"
+relations.each{ |id,wayRefs|
+  # Deals only with one outter
+  outter = ways[wayRefs[0][0]]
+  puts "0"
+  puts outter.size
+  outter.each{ |node|
+    puts "#{nodes[node][0]} #{nodes[node][1]}"
+  }
+  wayRefs[1].each{ |wayRef|
+    inner = ways[wayRef]
+    puts "1"
+    puts inner.size
+    inner.each{ |node|
+      puts " #{nodes[node][0]} #{nodes[node][1]}"
     }
-#  end
+  }
 }
 
-#relations.each { |id,wayRefs|
-#  wayRefs[1].each{ |wayRef|
-#    puts "1"
-#    puts wayRef.size
-#    ways[wayRef].each{ |node|
-#      puts " #{nodes[node][0]} #{nodes[node][1]}"
-#    }
-#  }
-#}
+ways.each{ |id, nds|
+  if not relationways.include?(id) then
+    puts "0"
+    puts nds.size
+    nds.each{ |node|
+      puts "#{nodes[node][0]} #{nodes[node][1]}"
+    }
+  end
+}
