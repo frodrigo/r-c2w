@@ -1,13 +1,14 @@
 #!/bin/sh
 
 PSQL=psql
+RUBY=ruby
 
 # Create schema
 $PSQL -f stats/create-table-rc2w.sql
 
-find -name '*.gpx' | while read gpx; do
+find -name '*.gpx' | sort | while read gpx; do
   echo "${gpx}"
-  ruby stats/gpx2sql.rb "${gpx}" | $PSQL
+  $RUBY stats/gpx2sql.rb "${gpx}" | $PSQL
 done
 
-$PSQL -f stats/stats.sql
+$PSQL -f stats/stats.sql > stats.csv
