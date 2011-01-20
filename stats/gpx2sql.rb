@@ -8,8 +8,18 @@
 require 'rexml/document'
 
 include REXML
-name = ARGV[0]
-file = File.new(name)
+full_filename = ARGV[0]
+
+#011-7A001-AIGUES_VIVES-lands.skel-clean.gpx
+filename = full_filename.split('/')[-1]
+dep = filename[0..2]
+ref = filename[6..8]
+refINSEE = dep[0] == '0' ? "#{dep[1..2]}#{ref}" : "#{dep[0..2]}#{ref[1..2]}"
+type = filename[-20] # [lw]
+name = filename[10..-22]
+
+
+file = File.new(filename)
 doc = Document.new(file)
 
 ways = []
@@ -23,10 +33,10 @@ XPath.each(doc, 'gpx/trk/trkseg' ) { |trkseg|
 
 
 #INSERT INTO geotable ( the_geom, the_name ) VALUES ( ST_GeomFromText('LINESTRING(0 0,1 1,1 2)', 312), 'A Place');
-puts ways.collect{ |way|
-  "INSERT INTO rc2w (geom, name) VALUES ( ST_GeomFromText('LINESTRING(" +
+ways.each{ |way|
+  puts "INSERT INTO rc2w (geom, refINSEE, wtype, name) VALUES ( ST_GeomFromText('LINESTRING(" +
   way.collect{ |n|
     "#{n[1]} #{n[0]}"
   }.join(',') +
-  ")', 4326), '#{name}');"
+  ")', 4326), '#{refINSEE}', '#{type}', '#{name}');"
 }
