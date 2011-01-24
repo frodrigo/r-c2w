@@ -1,4 +1,4 @@
-CREATE TEMP VIEW stats AS
+CREATE TEMP VIEW gpx_stats AS
 SELECT
   refINSEE,
   name,
@@ -15,4 +15,4 @@ ORDER BY
     wtype
 ;
 
-COPY (SELECT * FROM stats) TO STDOUT WITH CSV HEADER;
+COPY (SELECT * FROM gpx_stats) TO STDOUT WITH CSV HEADER;
