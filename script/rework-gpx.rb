@@ -127,7 +127,7 @@ def fill_gap(length)
     end
     n = kdtree.nearest(k, length, e.to_a[0])
     if n
-      n = n[0..1]
+      n = P2.new(n[0],n[1])
       if k != n and not black_list.include?([k,n]) and not black_list.include?([n,k]) # Dosen't add reverse segement
         way = [k,n]
         @ways << way
