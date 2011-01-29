@@ -1,7 +1,7 @@
-DROP TABLE IF EXISTS rc2w;
+DROP TABLE IF EXISTS rc2w CASCADE;
 CREATE TABLE rc2w (
     id SERIAL NOT NULL,
-    refINSEE int,
+    refINSEE varchar,
     wtype char(1),
     name varchar
 );
