@@ -1,7 +1,8 @@
 #!/bin/sh
 
 DEP=$1
-PSQL=psql
+DB=
+PSQL="psql $DB"
 RUBY=ruby
 
 # Create schema
@@ -12,4 +13,4 @@ find -name "0${DEP}*.gpx" | sort | while read gpx; do
   $RUBY stats/gpx2sql.rb "${gpx}" | $PSQL
 done
 
-sed "s/__DEP__/${DEP}/g"  stats/gpx-stats.sql | sed -e 1d -e 2d | $PSQL > cadastre-stats-${DEP}.csv
+sed "s/__DEP__/${DEP}/g"  stats/gpx-stats.sql | $PSQL | sed -e 1d -e 2d > cadastre-stats-${DEP}.csv

@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS cadastre;
+DROP TABLE IF EXISTS cadastre CASCADE;
 CREATE TABLE cadastre(
     refinsee varchar,
     name varchar,
