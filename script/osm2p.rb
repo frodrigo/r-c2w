@@ -43,13 +43,15 @@ XPath.each(doc, 'osm/relation' ) { |rel|
 puts ways.size
 
 relations.each{ |id,wayRefs|
-  # Deals only with one outter
-  outter = ways[wayRefs[0][0]]
-  puts "0"
-  puts outter.size
-  outter.each{ |node|
-    puts "#{nodes[node][0]} #{nodes[node][1]}"
+  wayRefs[0].each{ |wayRef|
+    outer = ways[wayRef]
+    puts "0"
+    puts outer.size
+    outer.each{ |node|
+      puts " #{nodes[node][0]} #{nodes[node][1]}"
+    }
   }
+  # NOTE: all inner way are assoc. with last outer
   wayRefs[1].each{ |wayRef|
     inner = ways[wayRef]
     puts "1"

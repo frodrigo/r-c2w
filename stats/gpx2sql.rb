@@ -19,7 +19,7 @@ type = filename[-20] # [lw]
 name = filename[10..-22]
 
 
-file = File.new(filename)
+file = File.new(full_filename)
 doc = Document.new(file)
 
 ways = []

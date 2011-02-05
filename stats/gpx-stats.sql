@@ -13,7 +13,8 @@ SELECT
 FROM
     rc2w
 WHERE
-    refINSEE LIKE '__DEP__%'
+    refINSEE LIKE '__DEP__%' AND
+    st_length(geom::geography)/1000 < 6
 GROUP BY
     refINSEE,
     wtype,
