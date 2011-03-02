@@ -13,7 +13,7 @@ Build
 - boost library version > 1.44 
 
 Run
-- qadastre project with land extraction support: http://gitorious.org/~frodrigo/qadastre/frodrigo-qadastre2osm
+- qadastre (http://gitorious.org/qadastre/qadastre2osm)
 - ruby (>= version 1.9)
 
 
@@ -24,28 +24,28 @@ $ cd skeleton
 $ cmake .
 $ make
 
-Build convo directory, need libboost, but already cgal dependency.
+Build convo directory, need libboost, but already a cgal dependency.
 $ cd convo
 $ sh make
 
 
 Principle
 =========
-From city limit and used field extract public space. From this, compute volonoi diagram to extract street skeleton.
+From city limit and land field extract empty public space. From this, compute voronoi skeleton diagram and extract street.
 
 
 Usage
 =====
 Download and extract data from cadastre with project qadastre. Needed data for r-c2w are lands, water and city-limits (use --convert-with-lands option)
 
-Run r-c2w with extract osm file base name.
+Run r-c2w with .osm files base name.
 $ sh r-c2w.sh ../quadastre2osm/F4402-SAINTE-FOY-LA-GRANDE
 
 All result files are in same directory as input files. There is a file for street and one for waterway as *.skel.gpx.
 
 Batch Usage
 ===========
-Obtain commune list from qadastre with:
+Obtain communes list from qadastre with:
 $ Qadastre2OSM --list 011 > list
 
 Place the list file in root directory of project. Fix QADASTRE path in r-c2w-list.sh if needed.
