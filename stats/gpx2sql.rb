@@ -34,9 +34,9 @@ XPath.each(doc, 'gpx/trk/trkseg' ) { |trkseg|
 
 #INSERT INTO geotable ( the_geom, the_name ) VALUES ( ST_GeomFromText('LINESTRING(0 0,1 1,1 2)', 312), 'A Place');
 ways.each{ |way|
-  puts "INSERT INTO rc2w (geom, refINSEE, wtype, name) VALUES ( ST_GeomFromText('LINESTRING(" +
+  puts "INSERT INTO rc2w (geom, refINSEE) VALUES ( ST_GeomFromText('LINESTRING(" +
   way.collect{ |n|
     "#{n[1]} #{n[0]}"
   }.join(',') +
-  ")', 4326), '#{refINSEE}', '#{type}', '#{name}');"
+  ")', 4326), '#{refINSEE}');"
 }
